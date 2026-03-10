@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pathway to Success – Agent Training Game</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --navy: #1B2A5A;
+    --gold: #C9A84C;
+    --gold-light: #F0D080;
+    --gold-dark: #A07830;
+    --white: #FFFFFF;
+    --off-white: #F8F7F4;
+    --light-gray: #EFF1F5;
+    --mid-gray: #C8CDD8;
+    --text-dark: #1A1E2E;
+    --text-mid: #4A5068;
+    --correct: #2E7D52;
+    --correct-bg: #E8F5EE;
+    --wrong: #B5341A;
+    --wrong-bg: #FDECEA;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--white);
+    color: var(--text-dark);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  /* ── HEADER ── */
+  header {
+    width: 100%;
+    background: var(--navy);
+    padding: 18px 40px;
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    box-shadow: 0 4px 20px rgba(27,42,90,0.25);
+  }
+  header img { height: 54px; }
+  .header-text h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.5rem;
+    color: var(--gold);
+    letter-spacing: 0.05em;
+    line-height: 1.1;
+  }
+  .header-text p {
+    font-size: 0.78rem;
+    color: var(--mid-gray);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .header-badge {
+    margin-left: auto;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--navy);
+    font-weight: 700;
+    font-size: 0.78rem;
+    letter-spacing: 0.08em;
+    padding: 6px 14px;
+    border-radius: 20px;
+    text-transform: uppercase;
+  }
+
+  /* ── MAIN WRAPPER ── */
+  main {
+    width: 100%;
+    max-width: 900px;
+    padding: 32px 20px 60px;
+    flex: 1;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; }
+  .screen.active { display: block; animation: fadeIn 0.4s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* ── WELCOME SCREEN ── */
+  #welcome-screen {
+    text-align: center;
+    padding: 20px 0 40px;
+  }
+  .welcome-logo {
+    width: 120px;
+    margin: 0 auto 24px;
+    display: block;
+  }
+  #welcome-screen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    color: var(--navy);
+    line-height: 1.15;
+    margin-bottom: 12px;
+  }
+  #welcome-screen h2 span { color: var(--gold); }
+  #welcome-screen p {
+    color: var(--text-mid);
+    font-size: 1.05rem;
+    max-width: 560px;
+    margin: 0 auto 32px;
+    line-height: 1.65;
+  }
+
+  /* Gold divider */
+  .gold-divider {
+    width: 60px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-light));
+    border-radius: 2px;
+    margin: 0 auto 28px;
+  }
+
+  /* Week selector */
+  .week-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    max-width: 720px;
+    margin: 0 auto 36px;
+  }
+  .week-card {
+    background: var(--off-white);
+    border: 2px solid var(--light-gray);
+    border-radius: 14px;
+    padding: 18px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .week-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, var(--navy) 0%, #2A4080 100%);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  .week-card:hover::before,
+  .week-card.selected::before { opacity: 1; }
+  .week-card .week-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--navy);
+    position: relative;
+    z-index: 1;
+    transition: color 0.2s;
+  }
+  .week-card:hover .week-num,
+  .week-card.selected .week-num { color: var(--gold); }
+  .week-card .week-label {
+    font-size: 0.72rem;
+    color: var(--text-mid);
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    position: relative;
+    z-index: 1;
+    transition: color 0.2s;
+    margin-top: 4px;
+  }
+  .week-card:hover .week-label,
+  .week-card.selected .week-label { color: var(--gold-light); }
+  .week-card .week-title {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    position: relative;
+    z-index: 1;
+    transition: color 0.2s;
+    margin-top: 6px;
+    line-height: 1.3;
+  }
+  .week-card:hover .week-title,
+  .week-card.selected .week-title { color: var(--white); }
+
+  /* All Weeks option */
+  .all-weeks-btn {
+    background: linear-gradient(135deg, var(--navy), #2A4080);
+    color: var(--gold);
+    border: none;
+    padding: 14px 36px;
+    border-radius: 40px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-right: 12px;
+    box-shadow: 0 4px 16px rgba(27,42,90,0.3);
+  }
+  .all-weeks-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(27,42,90,0.4); }
+
+  .start-btn {
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--navy);
+    border: none;
+    padding: 14px 36px;
+    border-radius: 40px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(201,168,76,0.4);
+  }
+  .start-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(201,168,76,0.5); }
+  .start-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  /* ── QUIZ SCREEN ── */
+  #quiz-screen {}
+
+  /* Progress */
+  .quiz-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+  }
+  .quiz-info { display: flex; align-items: center; gap: 16px; }
+  .quiz-label {
+    background: var(--navy);
+    color: var(--gold);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 20px;
+  }
+  .q-counter {
+    font-size: 0.9rem;
+    color: var(--text-mid);
+    font-weight: 500;
+  }
+  .score-display {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--off-white);
+    border: 1px solid var(--light-gray);
+    border-radius: 20px;
+    padding: 7px 16px;
+  }
+  .score-star { font-size: 1.1rem; }
+  .score-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--navy);
+  }
+
+  /* Progress bar */
+  .progress-bar-wrap {
+    background: var(--light-gray);
+    border-radius: 8px;
+    height: 8px;
+    margin-bottom: 32px;
+    overflow: hidden;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--navy), var(--gold));
+    border-radius: 8px;
+    transition: width 0.4s ease;
+  }
+
+  /* Question card */
+  .question-card {
+    background: var(--white);
+    border: 1.5px solid var(--light-gray);
+    border-radius: 20px;
+    padding: 36px 36px 28px;
+    box-shadow: 0 4px 28px rgba(27,42,90,0.07);
+    margin-bottom: 22px;
+  }
+  .question-week-tag {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gold-dark);
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 4px 12px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+  }
+  .question-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.35rem;
+    line-height: 1.5;
+    color: var(--navy);
+    font-weight: 700;
+  }
+
+  /* Options */
+  .options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .option-btn {
+    background: var(--off-white);
+    border: 2px solid var(--light-gray);
+    border-radius: 14px;
+    padding: 16px 20px;
+    text-align: left;
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.92rem;
+    font-weight: 500;
+    color: var(--text-dark);
+    transition: all 0.18s ease;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    line-height: 1.45;
+  }
+  .option-letter {
+    min-width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: var(--white);
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.18s;
+  }
+  .option-btn:hover:not(:disabled) {
+    border-color: var(--navy);
+    background: var(--white);
+    box-shadow: 0 3px 14px rgba(27,42,90,0.12);
+    transform: translateY(-1px);
+  }
+  .option-btn:hover:not(:disabled) .option-letter {
+    background: var(--gold);
+    color: var(--navy);
+  }
+  .option-btn.correct {
+    border-color: var(--correct);
+    background: var(--correct-bg);
+  }
+  .option-btn.correct .option-letter {
+    background: var(--correct);
+  }
+  .option-btn.wrong {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
+  }
+  .option-btn.wrong .option-letter {
+    background: var(--wrong);
+  }
+  .option-btn:disabled { cursor: default; }
+
+  /* Feedback */
+  .feedback-box {
+    border-radius: 14px;
+    padding: 16px 20px;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+    margin-bottom: 20px;
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .feedback-box.correct { background: var(--correct-bg); border: 1.5px solid #A8D5BC; }
+  .feedback-box.wrong { background: var(--wrong-bg); border: 1.5px solid #F0B8AD; }
+  .feedback-icon { font-size: 1.4rem; flex-shrink: 0; margin-top: 1px; }
+  .feedback-content h4 { font-size: 0.92rem; font-weight: 700; margin-bottom: 4px; }
+  .feedback-box.correct .feedback-content h4 { color: var(--correct); }
+  .feedback-box.wrong .feedback-content h4 { color: var(--wrong); }
+  .feedback-content p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.5; }
+
+  /* Next button */
+  .next-btn {
+    width: 100%;
+    padding: 16px;
+    background: linear-gradient(135deg, var(--navy), #2A4080);
+    color: var(--gold);
+    border: none;
+    border-radius: 14px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: none;
+  }
+  .next-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(27,42,90,0.3); }
+  .next-btn.show { display: block; animation: fadeIn 0.3s ease; }
+
+  /* ── RESULTS SCREEN ── */
+  #results-screen { text-align: center; padding: 20px 0; }
+  .trophy-area { font-size: 5rem; margin-bottom: 16px; }
+  #results-screen h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: var(--navy);
+    margin-bottom: 10px;
+  }
+  .final-score-badge {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--gold), var(--gold-dark));
+    color: var(--navy);
+    font-size: 2.2rem;
+    font-weight: 900;
+    padding: 14px 36px;
+    border-radius: 50px;
+    margin: 16px 0 8px;
+    box-shadow: 0 6px 20px rgba(201,168,76,0.4);
+  }
+  .score-subtitle {
+    color: var(--text-mid);
+    font-size: 0.95rem;
+    margin-bottom: 28px;
+  }
+  .results-breakdown {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    max-width: 520px;
+    margin: 0 auto 36px;
+  }
+  .result-stat {
+    background: var(--off-white);
+    border: 1.5px solid var(--light-gray);
+    border-radius: 16px;
+    padding: 20px 12px;
+  }
+  .result-stat .stat-num {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 900;
+    color: var(--navy);
+  }
+  .result-stat .stat-label {
+    font-size: 0.75rem;
+    color: var(--text-mid);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+  }
+  .result-grade {
+    display: inline-block;
+    padding: 6px 18px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 28px;
+  }
+  .grade-a { background: #E8F5EE; color: var(--correct); border: 1px solid #A8D5BC; }
+  .grade-b { background: #EEF3FF; color: var(--navy); border: 1px solid var(--mid-gray); }
+  .grade-c { background: #FFF7E0; color: #7A5A00; border: 1px solid #E8D080; }
+  .grade-d { background: var(--wrong-bg); color: var(--wrong); border: 1px solid #F0B8AD; }
+
+  .results-actions { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary {
+    background: linear-gradient(135deg, var(--navy), #2A4080);
+    color: var(--gold);
+    border: none;
+    padding: 13px 28px;
+    border-radius: 40px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 16px rgba(27,42,90,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(27,42,90,0.4); }
+  .btn-secondary {
+    background: var(--white);
+    color: var(--navy);
+    border: 2px solid var(--navy);
+    padding: 11px 26px;
+    border-radius: 40px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-secondary:hover { background: var(--navy); color: var(--gold); }
+
+  /* REVIEW panel */
+  .review-panel { text-align: left; margin-top: 32px; }
+  .review-panel h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    color: var(--navy);
+    margin-bottom: 18px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid var(--light-gray);
+  }
+  .review-item {
+    background: var(--off-white);
+    border-radius: 12px;
+    padding: 16px 18px;
+    margin-bottom: 10px;
+    border-left: 4px solid var(--mid-gray);
+  }
+  .review-item.r-correct { border-left-color: var(--correct); }
+  .review-item.r-wrong { border-left-color: var(--wrong); }
+  .review-q { font-size: 0.88rem; font-weight: 600; color: var(--text-dark); margin-bottom: 6px; }
+  .review-a { font-size: 0.82rem; color: var(--text-mid); }
+  .review-a span { font-weight: 600; }
+  .review-a span.ok { color: var(--correct); }
+  .review-a span.bad { color: var(--wrong); }
+
+  /* Streak indicator */
+  .streak-bar {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+  }
+  .streak-dot {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--light-gray);
+    background: var(--off-white);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.65rem;
+  }
+  .streak-dot.s-correct { background: var(--correct); border-color: var(--correct); color: var(--white); }
+  .streak-dot.s-wrong { background: var(--wrong); border-color: var(--wrong); color: var(--white); }
+
+  @media (max-width: 640px) {
+    header { padding: 14px 18px; }
+    header img { height: 40px; }
+    .week-grid { grid-template-columns: repeat(2, 1fr); }
+    .options-grid { grid-template-columns: 1fr; }
+    .results-breakdown { grid-template-columns: repeat(3, 1fr); }
+    .question-card { padding: 24px 18px 20px; }
+    #welcome-screen h2 { font-size: 1.8rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABY8AAAYICAYAAADSUTWLAAAACXBIWXMAAFiVAABYlQHZbTfTAAAgAElEQVR4nOzdTYyc9Zku/Ps/etfdNatoFn2qswksHMqzCGJh6J4FKMKB9ugMowhDu0c4oEwmtjNhJCYipMcThUiTD0PGE3FiRNvBKFJyFDdgFMULusELZBa4OL0IbNKdXswy5drM8nkXXY2N8Ud/VNW/nuf5/SQruD+qrk3krqvvuu9UFEUAAEDZpZSmt/ilk70/O7Ha+3M7naIoLu/wOQAAYCQk5TEAALlcV/hOxqdL3UZE7L3uWxoR0RpoqMFbvsHHlq77++WI6Gz+pSiK6z8PAAADpzwGAKAvUkrXlr2TcbUIvv6/m8NLVUntuFosr8bVSehPCmdlMwAA/aA8BgDgtq6ZEJ7s/bm2KN4bEeNDD8VWrMXVcnmp97+rvT9WawAAcEvKYwAANsvhzUL42mJ4KlcmhuZKbEwtR1wtmJdCuQwAUHvKYwCAGkgpTcbGxPC15XAjlMPc3ma5vHrdn8tFUXRu9k0AAJSf8hgAoEJ6E8STcbUonozyH5hjtC3HNYVyRKyaWAYAqAblMQBAyVxzmG6zHN78b3uHGSWbh/2WolcuO+QHAFAuymMAgBGWUrq2JJ4OJTHl146rU8qXY2P9xWrOQAAA3JjyGABgBFwzTTwdV6eJrZugTpbjaqFsShkAYAQojwEAhuy6onhzsriZMxOMqHZ8ekJ5KW8cAIB6UR4DAAxY74jddCiKoR82C+Wl2CiUHecDABgQ5TEAQB9ds6N4OqyegGFZjl6ZHHYoAwD0jfIYAGAXrpkqng7H7GBUrMXVMnnJdDIAwM4ojwEAts76unLJonGzq5lMqnXZi7kOAKiTvX6KrThqFjDmxfAhLuMQgkAAAAAElFTkSuQmCC" alt="Pathway to Success Logo">
+  <div class="header-text">
+    <h1>Pathway to Success</h1>
+    <p>Agent Training Challenge</p>
+  </div>
+  <div class="header-badge">Coldwell Banker Select</div>
+</header>
+
+<main>
+
+  <!-- WELCOME -->
+  <div id="welcome-screen" class="screen active">
+    <img class="welcome-logo" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABY8AAAYICAYAAADSUTWLAAAACXBIWXMAAFiVAABYlQHZbTfTAAAgAElEQVR4nOzdTYyc9Zku/Ps/etfdNatoFn2qswksHMqzCGJh6J4FKMKB9ugMowhDu0c4oEwmtjNhJCYipMcThUiTD0PGE3FiRNvBKFJyFDdgFMULusELZBa4OL0IbNKdXswy5drM8nkXXY2N8Ud/VNW/nuf5/SQruD+qrk3krqvvuu9UFEUAAEDZpZSmt/ilk70/O7Ha+3M7naIoLu/wOQAAYCQk5TEAALlcV/hOxqdL3UZE7L3uWxoR0RpoqMFbvsHHlq77++WI6Gz+pSiK6z8PAAADpzwGAKAvUkrXlr2TcbUIvv6/m8NLVUntuFosr8bVSehPCmdlMwAA/aA8BgDgtq6ZEJ7s/bm2KN4bEeNDD8VWrMXVcnmp97+rvT9WawAAcEvKYwAANsvhzUL42mJ4KlcmhuZKbEwtR1wtmJdCuQwAUHvKYwCAGkgpTcbGxPC15XAjlMPc3ma5vHrdn8tFUXRu9k0AAJSf8hgAoEJ6E8STcbUonozyH5hjtC3HNYVyRKyaWAYAqAblMQBAyVxzmG6zHN78b3uHGSWbh/2WolcuO+QHAFAuymMAgBGWUrq2JJ4OJTHl146rU8qXY2P9xWrOQAAA3JjyGABgBFwzTTwdV6eJrZugTpbjaqFsShkAYAQojwEAhuy6onhzsriZMxOMqHZ8ekJ5KW8cAIB6UR4DAAxY74jddCiKoR82C+Wl2CiUHecDABgQ5TEAQB9ds6N4OqyegGFZjl6ZHHYoAwD0jfIYAGAXrpkqng7H7GBUrMXVMnnJdDIAwM4ojwEAts76unLJonGzq5lMqnXZi7kOAKiTvX6KrThqFjDmxfAhLuMQgkAAAAAElFTkSuQmCC" alt="Logo">
+    <h2>Test Your <span>Agent Knowledge</span></h2>
+    <div class="gold-divider"></div>
+    <p>Challenge yourself with questions drawn from the Pathway to Success curriculum. Select a week to focus on, or play all 8 weeks!</p>
+
+    <div class="week-grid">
+      <div class="week-card" data-week="1">
+        <div class="week-num">01</div>
+        <div class="week-label">Week</div>
+        <div class="week-title">Goal Setting & COI Mastery</div>
+      </div>
+      <div class="week-card" data-week="2">
+        <div class="week-num">02</div>
+        <div class="week-label">Week</div>
+        <div class="week-title">MLS & Realist</div>
+      </div>
+      <div class="week-card" data-week="3">
+        <div class="week-num">03</div>
+        <div class="week-label">Week</div>
+        <div class="week-title">Open Houses</div>
+      </div>
+      <div class="week-card" data-week="4">
+        <div class="week-num">04</div>
+        <div class="week-label">Week</div>
+        <div class="week-title">Working with Buyers</div>
+      </div>
+      <div class="week-card" data-week="5">
+        <div class="week-num">05</div>
+        <div class="week-label">Week</div>
+        <div class="week-title">Working with Sellers</div>
+      </div>
+      <div class="week-card" data-week="6">
+        <div class="week-num">06</div>
+        <div class="week-label">Week</div>
+        <div class="week-title">Navigating Contracts Pt. 1</div>
+      </div>
+      <div class="week-card" data-week="7">
+        <div class="week-num">07</div>
+        <div class="week-label">Week</div>
+        <div class="week-title">Navigating Contracts Pt. 2</div>
+      </div>
+      <div class="week-card" data-week="8">
+        <div class="week-num">08</div>
+        <div class="week-label">Week</div>
+        <div class="week-title">Marketing & Prospecting</div>
+      </div>
+    </div>
+
+    <button class="all-weeks-btn" id="all-weeks-btn">🏆 All 8 Weeks</button>
+    <button class="start-btn" id="start-btn" disabled>Start Quiz →</button>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="quiz-screen" class="screen">
+    <div class="quiz-header">
+      <div class="quiz-info">
+        <div class="quiz-label" id="quiz-week-label">Week 1</div>
+        <div class="q-counter"><span id="q-current">1</span> of <span id="q-total">10</span></div>
+      </div>
+      <div class="score-display">
+        <span class="score-star">⭐</span>
+        <span class="score-value" id="score-val">0</span>
+      </div>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progress-fill" style="width:0%"></div>
+    </div>
+    <div class="streak-bar" id="streak-bar"></div>
+    <div class="question-card">
+      <div class="question-week-tag" id="q-week-tag">Week 1 · Goal Setting</div>
+      <div class="question-text" id="question-text">Loading…</div>
+    </div>
+    <div class="options-grid" id="options-grid"></div>
+    <div id="feedback-area"></div>
+    <button class="next-btn" id="next-btn">Next Question →</button>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results-screen" class="screen">
+    <div class="trophy-area" id="trophy-emoji">🏆</div>
+    <h2 id="results-title">Quiz Complete!</h2>
+    <div class="final-score-badge" id="final-score">0 / 0</div>
+    <div class="score-subtitle" id="score-subtitle">Great effort!</div>
+    <span class="result-grade" id="result-grade">A</span>
+
+    <div class="results-breakdown">
+      <div class="result-stat">
+        <div class="stat-num" id="r-correct">0</div>
+        <div class="stat-label">Correct</div>
+      </div>
+      <div class="result-stat">
+        <div class="stat-num" id="r-wrong">0</div>
+        <div class="stat-label">Incorrect</div>
+      </div>
+      <div class="result-stat">
+        <div class="stat-num" id="r-pct">0%</div>
+        <div class="stat-label">Accuracy</div>
+      </div>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn-primary" id="play-again-btn">Play Again</button>
+      <button class="btn-secondary" id="review-btn">Review Answers</button>
+      <button class="btn-secondary" id="home-btn">Choose Week</button>
+    </div>
+
+    <div class="review-panel" id="review-panel" style="display:none">
+      <h3>📋 Answer Review</h3>
+      <div id="review-list"></div>
+    </div>
+  </div>
+
+</main>
+
+<script>
+const QUESTIONS = [
+  // ── WEEK 1: Goal Setting & COI ──
+  { week:1, tag:"Week 1 · Goal Setting & COI", q:"What is the company expectation for new agent production in the first 6 months during Pathway to Success?", opts:["2 listings only","4 transactions (ideally 2 listings & 2 buy sides)","6 transactions total","Close 1 listing per month"], ans:1, exp:"The program expects new agents to close 4 transactions in their first 6 months — ideally 2 listings and 2 buy sides." },
+  { week:1, tag:"Week 1 · Goal Setting & COI", q:"What does COI stand for in real estate?", opts:["Cost of Investment","Circle of Influence","Certificate of Insurance","Commission on Income"], ans:1, exp:"COI stands for Circle of Influence — your personal network of people who know, like, and trust you." },
+  { week:1, tag:"Week 1 · Goal Setting & COI", q:"What is the COI goal agents should reach by the end of Week 2?", opts:["50 people","100 people","150 people","200 people"], ans:2, exp:"The goal is 150 people by the end of Week 2 — about 15 people a day for 10 days." },
+  { week:1, tag:"Week 1 · Goal Setting & COI", q:"What does F.O.R.D. stand for when making calls to your COI?", opts:["Finance, Offers, Referrals, Deals","Family, Occupation, Recreation, Dreams","Follow-up, Outreach, Relationships, Deadlines","First, Open, Reach, Determine"], ans:1, exp:"F.O.R.D. = Family, Occupation, Recreation, Dreams — a conversation framework to build rapport." },
+  { week:1, tag:"Week 1 · Goal Setting & COI", q:"How many FORD calls should agents aim to complete per day?", opts:["5 calls","10 calls","15 calls","20 calls"], ans:1, exp:"The goal is 10 F.O.R.D. calls per day to members of your COI." },
+  { week:1, tag:"Week 1 · Goal Setting & COI", q:"How many points per day should agents accumulate using the Ninja Perfect Week Scorecard?", opts:["10 points","15 points","20 points","25 points"], ans:2, exp:"The goal is 20 points per day, totaling 100 points per week." },
+  { week:1, tag:"Week 1 · Goal Setting & COI", q:"What worksheet helps agents determine their goal from a 'shiny, magical number' they already have in mind?", opts:["Personal Monthly Expenses worksheet","Face-to-Face Commitment worksheet","COI Template for BAY","Ninja Perfect Week Scorecard"], ans:1, exp:"The Face-to-Face Commitment worksheet is for agents who already have their target income in mind." },
+  { week:1, tag:"Week 1 · Goal Setting & COI", q:"Which alternative career option is mentioned for agents who decide real estate isn't for them during Pathway?", opts:["Property Management","Referral Group","Mortgage Lending","Title Work"], ans:1, exp:"The Referral Group is mentioned as a viable option for agents who decide real estate isn't the path for them." },
+
+  // ── WEEK 2: MLS & Realist ──
+  { week:2, tag:"Week 2 · MLS & Realist", q:"What tool can agents use to find property addresses for anyone they know or to send neighborhood mailers?", opts:["ShowingTime","Dotloop","Realist","MoxiWorks"], ans:2, exp:"Realist allows agents to search addresses, print tax records, and export mailing labels for neighborhoods." },
+  { week:2, tag:"Week 2 · MLS & Realist", q:"In MLS, which of these is NOT listed as something agents should learn to search for?", opts:["Individual listings","Listings in a specific area","Listings by commission rate","Listings in a school district"], ans:2, exp:"Agents learn to search by specific area, school district, and neighborhood/subdivision — NOT by commission rate." },
+  { week:2, tag:"Week 2 · MLS & Realist", q:"What information on a tax record is described as 'very important when pulling comps'?", opts:["Tax Total/Year","Sale Date","Subdivision","Homestead"], ans:2, exp:"The Subdivision is highlighted as very important when pulling comparable sales (comps)." },
+  { week:2, tag:"Week 2 · MLS & Realist", q:"What tool is used to schedule property showings?", opts:["Dotloop","ShowingTime","Back at You Office","Realist"], ans:1, exp:"ShowingTime is the tool used to schedule property showings." },
+  { week:2, tag:"Week 2 · MLS & Realist", q:"Before showing a property, what should an agent review to prepare?", opts:["Only the list price","Disclosures, Broker Remarks, Tax Records, Property History","Only the MLS sheet","The seller's social media"], ans:1, exp:"Agents should review Disclosures, Broker Remarks, Tax Records, and Property History before showing." },
+  { week:2, tag:"Week 2 · MLS & Realist", q:"How many CMAs (Real Estate Reviews) should agents create per day in Week 2?", opts:["1 CMA per day","2 CMAs per day","3 CMAs per day","5 CMAs per day"], ans:1, exp:"The homework calls for 2 CMAs per day, resulting in 6 mailed CMAs over 3 days." },
+  { week:2, tag:"Week 2 · MLS & Realist", q:"What should agents do after showing a property?", opts:["Send a bill to the listing agent","Provide feedback to the listing agent","Call the seller directly","Do nothing"], ans:1, exp:"Providing feedback to the listing agent after a showing is a key professional best practice." },
+  { week:2, tag:"Week 2 · MLS & Realist", q:"Property Previews are best described as:", opts:["Showing properties to real buyers only","Previewing homes as if you are showing to an actual buyer","Broker opens only for agents","Virtual tours only"], ans:1, exp:"Property Previews involve requesting to preview 3 properties and treating them as if you're showing to an actual buyer." },
+
+  // ── WEEK 3: Open Houses ──
+  { week:3, tag:"Week 3 · Open Houses", q:"What three factors affect foot traffic at an open house?", opts:["Day of week, weather, and advertising","Location, price, and days on market","Signs, flyers, and social media","Agent experience, price, and MLS listing"], ans:1, exp:"Location, Price, and Days on Market are the key factors that affect foot traffic at an open house." },
+  { week:3, tag:"Week 3 · Open Houses", q:"How early should an agent arrive before an open house begins?", opts:["5 minutes early","15 minutes early","30 minutes early","At the exact start time"], ans:1, exp:"Agents should arrive 15 minutes early to prepare and set up." },
+  { week:3, tag:"Week 3 · Open Houses", q:"Why is it CRUCIAL to ask visitors to sign in at an open house?", opts:["It is required by law","It's needed for follow-up and COI building","To check ID","To count attendance for MLS"], ans:1, exp:"The sign-in sheet is essential for follow-up — reaching out to visitors and adding them to your COI." },
+  { week:3, tag:"Week 3 · Open Houses", q:"Which store is mentioned for ordering 'Open House in a Box'?", opts:["Office Depot","The UPS Store","BlueCrewStore.com","Amazon"], ans:2, exp:"BlueCrewStore.com is where agents order the 'Open House in a Box' supplies." },
+  { week:3, tag:"Week 3 · Open Houses", q:"After the open house, what should an agent send to visitors who stopped by?", opts:["A bill for their time","A 'Thank You' text","A listing agreement","A comparative market analysis"], ans:1, exp:"Agents should send a 'Thank You' text to any visitors who stopped by the open house." },
+  { week:3, tag:"Week 3 · Open Houses", q:"What is recommended to help maximize foot traffic and provide sponsor value?", opts:["Hire a DJ","Partner with a sponsor to provide water/snacks","Offer a gift card raffle","Advertise on TV"], ans:1, exp:"Partnering with a sponsor to provide bottles of water or snacks can help attract visitors." },
+  { week:3, tag:"Week 3 · Open Houses", q:"Who is suggested to co-host an open house in the future?", opts:["A title company rep","A home inspector","A lender","A contractor"], ans:2, exp:"Inviting a lender to co-host is recommended — they can help qualify buyers on the spot." },
+  { week:3, tag:"Week 3 · Open Houses", q:"Which of the following should agents print ONE copy of to offer to email visitors?", opts:["The buyer broker agreement","A neighborhood CMA","The MLS listing sheet","The seller disclosure"], ans:1, exp:"Agents print ONE copy of the Neighborhood CMA and offer to EMAIL a copy to any visitors." },
+
+  // ── WEEK 4: Working with Buyers ──
+  { week:4, tag:"Week 4 · Working with Buyers", q:"What platform is used to create contracts and manage transaction documents?", opts:["ShowingTime","Realist","Dotloop","Back at You Office"], ans:2, exp:"Dotloop is used to create and manage contracts, starting a Loop titled 'Contracting – Residential'." },
+  { week:4, tag:"Week 4 · Working with Buyers", q:"What is the 'Buyer Consultation' best described as?", opts:["A phone call to check on the buyer","An in-person meeting to prove value, build rapport, and set expectations","A written proposal sent by email","A showing of multiple properties"], ans:1, exp:"The Buyer Consultation is an in-person meeting to prove value, build rapport, and set the buyer up for success." },
+  { week:4, tag:"Week 4 · Working with Buyers", q:"Before meeting a buyer face-to-face, what key questions should an agent get answered?", opts:["What color carpets they prefer","Whether they are pre-qualified, their budget, and where they're looking","What neighborhood they went to school in","Whether they have pets"], ans:1, exp:"Agents should find out if buyers are pre-qualified, what their budget is, and where they are looking." },
+  { week:4, tag:"Week 4 · Working with Buyers", q:"What is the concept of the '85% Perfect Home'?", opts:["Buyers should accept 85% of repairs after inspection","No home will be 100% perfect — buyers should expect to get about 85% of their wish list","Agents should discount their commission by 15%","85% of homes in MLS qualify for a buyer's search"], ans:1, exp:"No home is 100% perfect — buyers should be prepared to find one that meets about 85% of their needs." },
+  { week:4, tag:"Week 4 · Working with Buyers", q:"How many practice offers does the Week 4 homework require agents to write?", opts:["1 offer","2 offers","3 offers","5 offers"], ans:2, exp:"Agents write 3 offers: Conventional, FHA, and VA." },
+  { week:4, tag:"Week 4 · Working with Buyers", q:"What is the purpose of the 'Estimated Cost to Buyer' document?", opts:["To show the buyer how much they'll owe at closing","To calculate agent commission","To estimate home repair costs","To compare mortgage lenders"], ans:0, exp:"The Estimated Cost to Buyer shows out-of-pocket costs the buyer will incur at closing." },
+  { week:4, tag:"Week 4 · Working with Buyers", q:"Which document outlines financial guidelines buyers must follow during the home buying process?", opts:["Buyer Broker Agreement","Loan Do's and Don'ts","Out of Pocket Costs sheet","Home Buying Process Timeline"], ans:1, exp:"The Loan Do's and Don'ts (obtained from AMC) guides buyers on financial behavior during the buying process." },
+  { week:4, tag:"Week 4 · Working with Buyers", q:"What week 4 homework involves shadowing another agent to observe a real transaction?", opts:["Shadowing a listing appointment","Shadowing a home inspection","Shadowing a closing","Attending a mortgage seminar"], ans:1, exp:"Agents should attend/shadow a Home Inspection with another Coldwell Banker agent to gain hands-on experience." },
+
+  // ── WEEK 5: Working with Sellers ──
+  { week:5, tag:"Week 5 · Working with Sellers", q:"What tool within MLS can agents use to create impressive listing presentations?", opts:["Dotloop","ShowingTime","RPR (Realist Property Resource)","Realist"], ans:2, exp:"RPR (Realist Property Resource) is located in MLS and is a powerful tool for research and presentations." },
+  { week:5, tag:"Week 5 · Working with Sellers", q:"What platform is recommended for making polished listing presentations?", opts:["Microsoft PowerPoint","Moxi Present","Google Slides","Canva"], ans:1, exp:"Moxi Present is the recommended platform — tutorial videos are available on the Level Up App." },
+  { week:5, tag:"Week 5 · Working with Sellers", q:"What should an agent do at the START of a listing appointment?", opts:["Immediately present pricing","Start with a home tour and take notes while LISTENING","Ask the seller to sign the listing agreement","Present comps on a laptop"], ans:1, exp:"Starting with a home tour and actively listening is critical — agents use the Listing Consultation Worksheet." },
+  { week:5, tag:"Week 5 · Working with Sellers", q:"What technology sends an email to the agent within 24 hours of taking a new listing to set up advertising?", opts:["ShowingTime","Back at You Office","Adwerx","Moxi Present"], ans:2, exp:"Adwerx automatically triggers an email within 24 hours of a new listing being entered, allowing the agent to edit the campaign." },
+  { week:5, tag:"Week 5 · Working with Sellers", q:"What is the recommended Week 5 homework related to photography?", opts:["Take listing photos yourself","Shadow a Coldwell Banker Select Listing Photography session","Order drone photography online","Learn to edit photos in Lightroom"], ans:1, exp:"Agents should shadow a Coldwell Banker Select Listing Photography session to understand the process." },
+  { week:5, tag:"Week 5 · Working with Sellers", q:"Which file helps agents confirm all necessary listing paperwork is completed?", opts:["Seller Perspective FILE","Listing Checklist FILE","Pre-Listing Interview FILE","Listing Consultation Worksheet"], ans:1, exp:"The Listing Checklist FILE ensures all necessary listing paperwork is completed." },
+  { week:5, tag:"Week 5 · Working with Sellers", q:"What tool is mentioned to ensure seller disclosures are properly handled?", opts:["Dotloop","Sellers Shield","Adwerx","MLS Listing Portal"], ans:1, exp:"Sellers Shield is the tool used to provide and manage seller disclosures." },
+  { week:5, tag:"Week 5 · Working with Sellers", q:"After submitting a listing in Dotloop, what happens next?", opts:["The agent manually enters the listing to MLS","Admins review the file for compliance AND upload to MLS","The seller receives an automatic email","ShowingTime is automatically activated"], ans:1, exp:"After 'Submit for Review' in Dotloop, company admins review for compliance and upload the listing to MLS." },
+
+  // ── WEEK 6: Navigating the Contract Part 1 ──
+  { week:6, tag:"Week 6 · Contracts Part 1", q:"After going under contract with a buyer, what is the recommended tip for keeping buyers informed of their 'To Do' list?", opts:["Call them daily","Send a text with reminders","Send an email outlining their To Do list (see 'Congrats! What's Next?!' file)","Post updates on social media"], ans:2, exp:"Sending buyers an email using the 'Congrats! What's Next?!' file template keeps them organized and informed." },
+  { week:6, tag:"Week 6 · Contracts Part 1", q:"What is a TRR?", opts:["Title Repair Request","Transaction Risk Report","Inspection repair request submitted to the seller after an inspection","Transfer & Rollover Report"], ans:2, exp:"A TRR (Transaction Repair Request) is submitted to the seller after inspection, requesting repairs or credits." },
+  { week:6, tag:"Week 6 · Contracts Part 1", q:"What file helps agents understand common items found during a home inspection?", opts:["TRR Tips & Strategies FILE","Commonly Notated Items on a Home Inspection Report FILE","Practice Inspection Report FILE","Buyer Under Contract Checklist FILE"], ans:1, exp:"The 'Commonly Notated Items on a Home Inspection Report' FILE helps agents prepare buyers for what inspectors typically find." },
+  { week:6, tag:"Week 6 · Contracts Part 1", q:"Who is the partnered home inspector mentioned in the program?", opts:["Mike Johnson with Eagle Eye Inspections","Joseph Alcott with Spartan Home Inspection","Tom Davis with Pro Home Check","Bill Smith with Clear View Inspections"], ans:1, exp:"Joseph Alcott with Spartan Home Inspection is the partnered inspector (918-888-6867)." },
+  { week:6, tag:"Week 6 · Contracts Part 1", q:"What is an important behavioral reminder when viewing a home during a showing?", opts:["Always compliment the décor","Always assume you're on camera and be discrete","Speak loudly so clients can hear you","Point out every flaw immediately"], ans:1, exp:"Agents should always assume they are on camera and discuss critiques after the showing, outside, discretely." },
+  { week:6, tag:"Week 6 · Contracts Part 1", q:"When writing a TRR, which resources should agents use together?", opts:["Only the Buyer Checklist","TRR Tips & Strategies FILE and the Example TRR FILE","Only the Practice Inspection Report","Buyer Broker Agreement and MLS listing"], ans:1, exp:"Agents should use the TRR Tips & Strategies FILE paired with the Example TRR FILE for guidance." },
+  { week:6, tag:"Week 6 · Contracts Part 1", q:"What is a key way to improve the inspection experience for your buyer BEFORE the inspection happens?", opts:["Tell them inspections never find anything","Send them a market report","Proactively prepare them by discussing commonly found inspection items in advance","Have them skip the inspection to save money"], ans:2, exp:"Proactively preparing buyers by discussing commonly found items eliminates anxiety and builds confidence." },
+  { week:6, tag:"Week 6 · Contracts Part 1", q:"What file gives agents an in-depth checklist of what to do after winning a contract for a buyer?", opts:["Congrats! What's Next?! FILE","Buyer Under Contract Checklist FILE","Home Buying Process Timeline FILE","Contract Checklist FILE"], ans:1, exp:"The Buyer Under Contract Checklist FILE is an in-depth reference for managing everything after winning a contract." },
+
+  // ── WEEK 7: Navigating the Contract Part 2 ──
+  { week:7, tag:"Week 7 · Contracts Part 2", q:"Where should agents shadow an actual closing in the Pathway to Success program?", opts:["At their broker's office","At Executives Title — contact Belinda Galbraith","At any title company they choose","At the courthouse"], ans:1, exp:"Agents should contact Belinda Galbraith at Executives Title (918-745-9977 / belinda@executivestitle.com)." },
+  { week:7, tag:"Week 7 · Contracts Part 2", q:"What file helps agents understand the seller's perspective on a transaction?", opts:["Seller Under Contract Checklist","Pre-Listing Interview FILE","Navigating Appraisal FILE","Seller Perspective FILE"], ans:3, exp:"The Seller Perspective FILE helps agents understand the mindset of sellers during the transaction." },
+  { week:7, tag:"Week 7 · Contracts Part 2", q:"How many of each contractor type should agents aim to connect with in Week 7?", opts:["1 of each","2 of each","3 of each","5 of each"], ans:1, exp:"Agents should connect with 2 plumbers, 2 electricians, 2 roofers, 2 HVAC techs, 2 structural repair companies, and 2 handymen." },
+  { week:7, tag:"Week 7 · Contracts Part 2", q:"Which loan type has DIFFERENT appraisal requirements from the others?", opts:["Conventional","FHA","VA","All have identical requirements"], ans:3, exp:"Conventional, FHA, and VA loans all have DIFFERENT appraisal requirements — agents learn each of these in Week 7." },
+  { week:7, tag:"Week 7 · Contracts Part 2", q:"What is the main difference between navigating a contract as a buyer's agent vs. a seller's agent?", opts:["The timeline is different","The events are different","The responsibilities are different, but the time frame and events are the same","The forms are completely different"], ans:2, exp:"The time frame and events are the same — only the responsibilities differ between representing buyers vs. sellers." },
+  { week:7, tag:"Week 7 · Contracts Part 2", q:"What interview is recommended after shadowing a closing?", opts:["Interview the buyer","Interview a closer at Executives Title to hear helpful stories","Interview the listing agent","Interview your managing broker"], ans:1, exp:"Interviewing a closer at Executives Title gives agents real-world stories and lessons to learn from." },
+  { week:7, tag:"Week 7 · Contracts Part 2", q:"What file helps agents review all necessary steps for closing day?", opts:["Navigating Appraisal FILE","Closing Day Checklist FILE","Seller Under Contract Checklist FILE","Contract Checklist FILE"], ans:1, exp:"The Closing Day Checklist FILE outlines best practices before and on the actual day of closing." },
+  { week:7, tag:"Week 7 · Contracts Part 2", q:"What resource helps agents prepare for an appraisal?", opts:["ShowingTime calendar","Navigating Appraisal FILE","Buyer Broker Agreement","MLS History Report"], ans:1, exp:"The Navigating Appraisal FILE helps agents know how to prepare and avoid appraisal-related hurdles." },
+
+  // ── WEEK 8: Marketing & Prospecting ──
+  { week:8, tag:"Week 8 · Marketing & Prospecting", q:"What is 'Back at You Office' used for?", opts:["Managing social media ads only","A CRM and marketing automation platform tailored for real estate agents","Scheduling showings","Filing paperwork"], ans:1, exp:"Back at You Office is a CRM and marketing automation platform specifically designed for real estate businesses." },
+  { week:8, tag:"Week 8 · Marketing & Prospecting", q:"What promo code can agents use with 'From Your Friends' to receive the first 100 postcards FREE?", opts:["FREESTART","NEWAGENT100","Welcome100","CBSELECT"], ans:2, exp:"The promo code 'Welcome100' gives agents their first 100 postcards free through From Your Friends." },
+  { week:8, tag:"Week 8 · Marketing & Prospecting", q:"What is FSBO?", opts:["For Sale By Owner — homeowners selling without an agent","Federal Standards for Buyer Operations","First Sale By Offer","For Sale, Best Offer"], ans:0, exp:"FSBO = For Sale By Owner — sellers who list their property without using a real estate agent." },
+  { week:8, tag:"Week 8 · Marketing & Prospecting", q:"Where can agents find scripts for speaking with FSBOs and Expired Listings?", opts:["On the Coldwell Banker website","In the MLS Learning Lab","On the Level Up App under Say & Share → Scripts","In the Dotloop template library"], ans:2, exp:"Scripts are located on the Level Up App under Say & Share → Scripts." },
+  { week:8, tag:"Week 8 · Marketing & Prospecting", q:"What is Prospect Square?", opts:["A local neighborhood farming area","A powerful automated email marketing service within CB Desk","A CRM for buyer leads","A listing presentation tool"], ans:1, exp:"Prospect Square is a powerful automated email marketing service available through CB Desk." },
+  { week:8, tag:"Week 8 · Marketing & Prospecting", q:"What is the final goal after completing all 8 weeks of Pathway to Success?", opts:["Take a week off","Continue working the Perfect Week Scorecard for the rest of your career (100 pts/week)","Move to a new market","Start teaching other agents"], ans:1, exp:"After Pathway, agents continue working the Perfect Week Scorecard (100 pts/week) for the rest of their career." },
+  { week:8, tag:"Week 8 · Marketing & Prospecting", q:"After completing Pathway to Success, how long does the manager continue checking in on the agent?", opts:["2 weeks","4 weeks","8 weeks","6 months"], ans:2, exp:"For the next 8 weeks after completing Pathway, managers continue checking in to offer guidance and encouragement." },
+  { week:8, tag:"Week 8 · Marketing & Prospecting", q:"What does MoxiWorks help agents with?", opts:["Filing compliance documents only","Listing presentations, connecting with COI, and managing client communications","Scheduling showings and open houses","Processing commission payments"], ans:1, exp:"MoxiWorks is a powerful marketing tool for listing presentations, connecting with your COI, and managing communications." },
+];
+
+const WEEK_NAMES = {
+  1:"Goal Setting & COI",2:"MLS & Realist",3:"Open Houses",4:"Working with Buyers",
+  5:"Working with Sellers",6:"Contracts Part 1",7:"Contracts Part 2",8:"Marketing & Prospecting",
+  all:"All Weeks"
+};
+
+let selectedWeek = null;
+let quizQuestions = [];
+let currentIdx = 0;
+let score = 0;
+let userAnswers = [];
+let answered = false;
+
+// ── WEEK SELECTION ──
+document.querySelectorAll('.week-card').forEach(card => {
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.week-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedWeek = parseInt(card.dataset.week);
+    document.getElementById('start-btn').disabled = false;
+  });
+});
+
+document.getElementById('all-weeks-btn').addEventListener('click', () => {
+  document.querySelectorAll('.week-card').forEach(c => c.classList.remove('selected'));
+  selectedWeek = 'all';
+  document.getElementById('start-btn').disabled = false;
+});
+
+document.getElementById('start-btn').addEventListener('click', startQuiz);
+
+function startQuiz() {
+  let pool = selectedWeek === 'all'
+    ? QUESTIONS
+    : QUESTIONS.filter(q => q.week === selectedWeek);
+
+  // Shuffle and pick up to 10
+  pool = shuffle([...pool]).slice(0, Math.min(10, pool.length));
+  quizQuestions = pool;
+  currentIdx = 0;
+  score = 0;
+  userAnswers = [];
+
+  document.getElementById('quiz-week-label').textContent =
+    selectedWeek === 'all' ? 'All Weeks' : 'Week ' + selectedWeek;
+  document.getElementById('q-total').textContent = quizQuestions.length;
+  document.getElementById('score-val').textContent = '0';
+  document.getElementById('streak-bar').innerHTML = '';
+
+  showScreen('quiz-screen');
+  renderQuestion();
+}
+
+function renderQuestion() {
+  answered = false;
+  const q = quizQuestions[currentIdx];
+  const total = quizQuestions.length;
+
+  document.getElementById('q-current').textContent = currentIdx + 1;
+  document.getElementById('progress-fill').style.width = ((currentIdx / total) * 100) + '%';
+  document.getElementById('q-week-tag').textContent = q.tag;
+  document.getElementById('question-text').textContent = q.q;
+  document.getElementById('feedback-area').innerHTML = '';
+  document.getElementById('next-btn').classList.remove('show');
+
+  const letters = ['A','B','C','D'];
+  const grid = document.getElementById('options-grid');
+  grid.innerHTML = '';
+  q.opts.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.innerHTML = `<span class="option-letter">${letters[i]}</span><span>${opt}</span>`;
+    btn.addEventListener('click', () => handleAnswer(i, btn));
+    grid.appendChild(btn);
+  });
+}
+
+function handleAnswer(chosenIdx, btn) {
+  if (answered) return;
+  answered = true;
+  const q = quizQuestions[currentIdx];
+  const correct = chosenIdx === q.ans;
+
+  const allBtns = document.querySelectorAll('.option-btn');
+  allBtns.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.ans) b.classList.add('correct');
+    if (i === chosenIdx && !correct) b.classList.add('wrong');
+  });
+
+  if (correct) score++;
+  document.getElementById('score-val').textContent = score;
+
+  userAnswers.push({ q: q.q, chosen: q.opts[chosenIdx], correct: q.opts[q.ans], ok: correct });
+
+  // Streak dot
+  const dot = document.createElement('div');
+  dot.className = 'streak-dot ' + (correct ? 's-correct' : 's-wrong');
+  dot.textContent = correct ? '✓' : '✗';
+  document.getElementById('streak-bar').appendChild(dot);
+
+  // Feedback
+  const fb = document.createElement('div');
+  fb.className = 'feedback-box ' + (correct ? 'correct' : 'wrong');
+  fb.innerHTML = `
+    <div class="feedback-icon">${correct ? '✅' : '❌'}</div>
+    <div class="feedback-content">
+      <h4>${correct ? 'Correct!' : 'Not quite…'}</h4>
+      <p>${q.exp}</p>
+    </div>`;
+  document.getElementById('feedback-area').appendChild(fb);
+
+  document.getElementById('next-btn').classList.add('show');
+  document.getElementById('next-btn').textContent =
+    currentIdx + 1 < quizQuestions.length ? 'Next Question →' : 'See Results →';
+}
+
+document.getElementById('next-btn').addEventListener('click', () => {
+  currentIdx++;
+  if (currentIdx < quizQuestions.length) {
+    renderQuestion();
+  } else {
+    showResults();
+  }
+});
+
+function showResults() {
+  const total = quizQuestions.length;
+  const pct = Math.round((score / total) * 100);
+
+  document.getElementById('final-score').textContent = `${score} / ${total}`;
+  document.getElementById('r-correct').textContent = score;
+  document.getElementById('r-wrong').textContent = total - score;
+  document.getElementById('r-pct').textContent = pct + '%';
+
+  let grade, gradeClass, trophy, subtitle;
+  if (pct >= 90) { grade='A'; gradeClass='grade-a'; trophy='🏆'; subtitle='Outstanding! You're ready to hit the ground running!'; }
+  else if (pct >= 80) { grade='B'; gradeClass='grade-b'; trophy='⭐'; subtitle='Great work! Review a few areas and you\'ll be unstoppable.'; }
+  else if (pct >= 70) { grade='C'; gradeClass='grade-c'; trophy='📈'; subtitle='Good effort! Review the material and try again.'; }
+  else { grade='D'; gradeClass='grade-d'; trophy='📚'; subtitle='Keep studying! Review the Pathway material and give it another shot.'; }
+
+  document.getElementById('trophy-emoji').textContent = trophy;
+  document.getElementById('results-title').textContent = pct >= 80 ? 'Excellent Work!' : 'Quiz Complete!';
+  document.getElementById('score-subtitle').textContent = subtitle;
+  const gradeEl = document.getElementById('result-grade');
+  gradeEl.textContent = 'Grade: ' + grade;
+  gradeEl.className = 'result-grade ' + gradeClass;
+
+  document.getElementById('review-panel').style.display = 'none';
+  showScreen('results-screen');
+}
+
+document.getElementById('review-btn').addEventListener('click', () => {
+  const panel = document.getElementById('review-panel');
+  panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+  const list = document.getElementById('review-list');
+  list.innerHTML = '';
+  userAnswers.forEach((a, i) => {
+    const item = document.createElement('div');
+    item.className = 'review-item ' + (a.ok ? 'r-correct' : 'r-wrong');
+    item.innerHTML = `
+      <div class="review-q">${i+1}. ${a.q}</div>
+      <div class="review-a">Your answer: <span class="${a.ok ? 'ok' : 'bad'}">${a.chosen}</span>
+      ${!a.ok ? ` · Correct: <span class="ok">${a.correct}</span>` : ''}</div>`;
+    list.appendChild(item);
+  });
+});
+
+document.getElementById('play-again-btn').addEventListener('click', () => {
+  startQuiz();
+});
+document.getElementById('home-btn').addEventListener('click', () => {
+  showScreen('welcome-screen');
+});
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+</script>
+</body>
+</html>
